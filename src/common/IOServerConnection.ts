@@ -77,7 +77,15 @@ export class IOServerConnection extends BaseConnection {
 
 	@skipIfClosed
 	public notify(notification: SocketMessage): void {
-		logger.debug('notification() [notification: %o]', notification);
+		logger.debug(
+			{
+				socketId: this.id,
+				event: 'notification',
+				direction: 'outbound',
+				data: notification
+			},
+			'notify()'
+		);
 
 		this.socket.emit('notification', notification);
 	}
@@ -88,10 +96,53 @@ export class IOServerConnection extends BaseConnection {
 			if (!this.socket) {
 				reject('No socket connection');
 			} else {
+				logger.debug(
+					{
+						socketId: this.id,
+						event: 'request',
+						direction: 'outbound',
+						data: socketMessage
+					},
+					'sendRequestOnWire() emit request'
+				);
+
 				this.socket.timeout(3000).emit('request', socketMessage, (timeout, serverError, response) => {
-					if (timeout) reject(new SocketTimeoutError('Request timed out'));
-					else if (serverError) reject(serverError);
-					else resolve(response);
+					if (timeout) {
+						logger.warn(
+							{
+								socketId: this.id,
+								event: 'request',
+								direction: 'outbound',
+								data: socketMessage
+							},
+							'sendRequestOnWire() timeout'
+						);
+						reject(new SocketTimeoutError('Request timed out'));
+					} else if (serverError) {
+						logger.warn(
+							{
+								socketId: this.id,
+								event: 'request',
+								direction: 'outbound',
+								data: socketMessage,
+								serverError
+							},
+							'sendRequestOnWire() serverError'
+						);
+						reject(serverError);
+					} else {
+						logger.debug(
+							{
+								socketId: this.id,
+								event: 'request',
+								direction: 'outbound',
+								data: socketMessage,
+								response
+							},
+							'sendRequestOnWire() success'
+						);
+						resolve(response);
+					}
 				});
 			}
 		});
@@ -118,27 +169,73 @@ export class IOServerConnection extends BaseConnection {
 
 		// TODO: reconnect logic here
 		this.socket.once('disconnect', () => {
-			logger.debug('socket disconnected');
+			logger.debug(
+				{
+					socketId: this.id,
+					event: 'disconnect'
+				},
+				'socket disconnected'
+			);
 
 			this.close();
 		});
 
 		this.socket.on('notification', (notification) => {
-			logger.debug('"notification" event [notification: %o]', notification);
+			logger.debug(
+				{
+					socketId: this.id,
+					event: 'notification',
+					direction: 'inbound',
+					data: notification
+				},
+				'handleSocket() notification'
+			);
 
 			this.emit('notification', notification);
 		});
 
 		this.socket.on('request', (request, result) => {
-			logger.debug('"request" event [request: %o]', request);
+			logger.debug(
+				{
+					socketId: this.id,
+					event: 'request',
+					direction: 'inbound',
+					data: request
+				},
+				'handleSocket() request'
+			);
 
 			this.emit(
 				'request',
 				request,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(response: any) => result(null, response),
+				(response: any) => {
+					logger.debug(
+						{
+							socketId: this.id,
+							event: 'request',
+							direction: 'inbound',
+							data: request,
+							response
+						},
+						'handleSocket() request ack success'
+					);
+					result(null, response);
+				},
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(error: any) => result(error, null)
+				(error: any) => {
+					logger.warn(
+						{
+							socketId: this.id,
+							event: 'request',
+							direction: 'inbound',
+							data: request,
+							error
+						},
+						'handleSocket() request ack error'
+					);
+					result(error, null);
+				}
 			);
 		});
 	}

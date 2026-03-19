@@ -14,6 +14,16 @@ export const socketHandler = (socket: Socket) => {
 	} = socket.handshake.query;
 
 	logger.debug(
+		{
+			socketId: socket.id,
+			query: socket.handshake.query,
+			headers: socket.handshake.headers,
+			address: socket.handshake.address
+		},
+		'socketHandler() - socket handshake details'
+	);
+
+	logger.debug(
 		'socketHandler() - socket connection [socketId: %s, roomId: %s, peerId: %s, tenantFqdn: %s]',
 		socket.id,
 		roomId,
