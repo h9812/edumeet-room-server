@@ -12,11 +12,42 @@ export const socketHandler = (socket: Socket) => {
 	} = socket.handshake.query;
 
 	logger.debug(
-		'socket connection [socketId: %s, roomId: %s, peerId: %s]',
+		'socket connection [socketId: %s, roomId: %s, peerId: %s, query: %o]',
 		socket.id,
 		roomId,
-		peerId
+		peerId,
+		socket.handshake.query
 	);
+
+	const normalizeArgs = (args: unknown[]): unknown[] =>
+		args.map((arg) => {
+			if (typeof arg === 'function')
+				return '[Function]';
+
+			return arg;
+		});
+
+	socket.onAny((event, ...args) => {
+		logger.debug(
+			'websocket event received [socketId: %s, event: %s, query: %o, data: %o]',
+			socket.id,
+			event,
+			socket.handshake.query,
+			normalizeArgs(args)
+		);
+	});
+
+	if (typeof socket.onAnyOutgoing === 'function') {
+		socket.onAnyOutgoing((event, ...args) => {
+			logger.debug(
+				'websocket event sent [socketId: %s, event: %s, query: %o, data: %o]',
+				socket.id,
+				event,
+				socket.handshake.query,
+				normalizeArgs(args)
+			);
+		});
+	}
 
 	if (!roomId || !peerId) {
 		logger.warn('socket invalid roomId or peerId');
