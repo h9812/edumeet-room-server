@@ -310,6 +310,19 @@ export class Peer extends EventEmitter {
 		this.connections.add(connection);
 
 		connection.on('notification', async (notification) => {
+			logger.debug(
+				{
+					peerId: this.id,
+					socketId: connection.id,
+					event: 'notification',
+					direction: 'inbound',
+					data: notification
+				},
+				'notification() [peerId: %s, method: %s]',
+				this.id,
+				notification.method
+			);
+
 			try {
 				const context = {
 					peer: this,
@@ -363,9 +376,20 @@ export class Peer extends EventEmitter {
 
 	@skipIfClosed
 	public notify(notification: SocketMessage): void {
-		logger.debug('notify() [peerId: %s, method: %s]', this.id, notification.method);
-
 		for (const connection of this.connections.items) {
+			logger.debug(
+				{
+					peerId: this.id,
+					socketId: connection.id,
+					event: 'notification',
+					direction: 'outbound',
+					data: notification
+				},
+				'notify() [peerId: %s, method: %s]',
+				this.id,
+				notification.method
+			);
+
 			try {
 				return connection.notify(notification);
 			} catch (error) {
