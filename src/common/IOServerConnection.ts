@@ -91,21 +91,30 @@ export class IOServerConnection extends BaseConnection {
 
 	@skipIfClosed
 	public notify(notification: SocketMessage): void {
-		logger.debug('notification() [notification: %o]', notification);
+		logger.debug('WS SEND notification [connId: %s, method: %s, payload: %o]', this.id, notification.method, notification.data);
 
 		this.socket.emit('notification', notification);
 	}
 
 	@skipIfClosed
 	private sendRequestOnWire(socketMessage: SocketMessage): Promise<unknown> {
+		logger.debug('WS SEND request [connId: %s, method: %s, payload: %o]', this.id, socketMessage.method, socketMessage.data);
+
 		return new Promise((resolve, reject) => {
 			if (!this.socket) {
 				reject('No socket connection');
 			} else {
 				this.socket.timeout(3000).emit('request', socketMessage, (timeout, serverError, response) => {
-					if (timeout) reject(new SocketTimeoutError('Request timed out'));
-					else if (serverError) reject(serverError);
-					else resolve(response);
+					if (timeout) {
+						logger.warn('WS RECV ack timeout [connId: %s, method: %s]', this.id, socketMessage.method);
+						reject(new SocketTimeoutError('Request timed out'));
+					} else if (serverError) {
+						logger.warn({ connId: this.id, method: socketMessage.method, error: serverError }, 'WS RECV ack error');
+						reject(serverError);
+					} else {
+						logger.debug({ connId: this.id, method: socketMessage.method, response }, 'WS RECV ack success');
+						resolve(response);
+					}
 				});
 			}
 		});
@@ -151,21 +160,27 @@ export class IOServerConnection extends BaseConnection {
 		});
 
 		this.socket.on('notification', (notification) => {
-			logger.debug('"notification" event [notification: %o]', notification);
+			logger.debug('WS RECV notification [connId: %s, method: %s, payload: %o]', this.id, notification.method, notification.data);
 
 			this.emit('notification', notification);
 		});
 
 		this.socket.on('request', (request, result) => {
-			logger.debug('"request" event [request: %o]', request);
+			logger.debug('WS RECV request [connId: %s, method: %s, payload: %o]', this.id, request.method, request.data);
 
 			this.emit(
 				'request',
 				request,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(response: any) => result(null, response),
+				(response: any) => {
+					logger.debug('WS SEND ack success [connId: %s, method: %s, response: %o]', this.id, request.method, response);
+					result(null, response);
+				},
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(error: any) => result(error, null)
+				(error: any) => {
+					logger.warn('WS SEND ack error [connId: %s, method: %s, error: %o]', this.id, request.method, error);
+					result(error, null);
+				}
 			);
 		});
 	}
