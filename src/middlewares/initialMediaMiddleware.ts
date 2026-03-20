@@ -25,7 +25,7 @@ export const createInitialMediaMiddleware = ({ room }: { room: Room; }): Middlew
 			case 'getRouterRtpCapabilities': {
 				const router = await peer.routerReady;
 
-				response.routerRtpCapabilities = router.rtpCapabilities;
+				Object.assign(response, router.rtpCapabilities);
 				context.handled = true;
 
 				break;
