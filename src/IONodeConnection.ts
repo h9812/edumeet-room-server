@@ -139,9 +139,9 @@ export class IONodeConnection extends BaseConnection {
 				'request',
 				request,
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(response: any) => result(null, response),
+				(response: any) => { if (typeof result === 'function') result(null, response); },
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(error: any) => result(error, null)
+				(error: any) => { if (typeof result === 'function') result(error, null); }
 			);
 		});
 	}

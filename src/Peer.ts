@@ -252,7 +252,11 @@ export class Peer extends EventEmitter {
 			} catch (error) {
 				logger.error('request() [error: %o]', error);
 
-				reject('Server error');
+				try {
+					reject('Server error');
+				} catch (rejectError) {
+					logger.error('request() failed to reject [error: %o]', rejectError);
+				}
 			}
 		});
 
