@@ -51,6 +51,44 @@ export const createJoinMiddleware = ({ room }: { room: Room; }): Middleware<Peer
 				response.lobbyPeers = lobbyPeers;
 				response.locked = room.locked;
 
+				const peersAlreadyInRoom = room.getPeers();
+
+				logger.debug(
+					'>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'
+				);
+				logger.debug(
+					'ROOM JOIN SNAPSHOT [roomId: %s] [sessionId: %s]',
+					room.id,
+					room.sessionId
+				);
+				logger.debug(
+					'  → joining peer: id=%s displayName=%s',
+					peer.id,
+					peer.displayName ?? '(none)'
+				);
+				logger.debug(
+					'  → peers already in this room (%d):',
+					peersAlreadyInRoom.length
+				);
+				if (peersAlreadyInRoom.length === 0) {
+					logger.debug('     (none — first peer in room)');
+				} else {
+					for (const p of peersAlreadyInRoom) {
+						const { id, displayName, audioOnly, roles } = p.peerInfo;
+
+						logger.debug(
+							'     • id=%s displayName=%s audioOnly=%s roles=%o',
+							id,
+							displayName ?? '(none)',
+							audioOnly,
+							roles
+						);
+					}
+				}
+				logger.debug(
+					'<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'
+				);
+
 				room.joinPeer(peer);
 				context.handled = true;
 
