@@ -61,7 +61,7 @@ export const socketHandler = (socket: Socket) => {
 		serverManager.handleConnection(
 			socketConnection,
 			peerId as string,
-			roomId as string,
+			(roomId as string).toLowerCase(),
 			displayName as string,
 			token as string,
 		);
