@@ -12,4 +12,10 @@ export interface Config {
 		latitude: number;
 		longitude: number;
 	}>;
+	baseFEOrigin?: string;
+	httpApiPort?: number;
+	firebase?: {
+		serviceAccountPath: string;
+		loginRequired: boolean;
+	};
 }

@@ -11,6 +11,10 @@
 		"secret": "secret-shared-with-media-node",
 		"latitude": 63.430481,
 		"longitude": 10.394964
+	}],
+	"baseFEOrigin": "https://your-base-fe.domain.com",
+	"firebase": {
+		"serviceAccountPath": "./config/firebase-service-account.json",
+		"loginRequired": true
 	}
-]
 }

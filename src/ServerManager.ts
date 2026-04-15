@@ -38,7 +38,7 @@ export default class ServerManager {
 		roomId: string,
 		displayName?: string,
 		token?: string,
-	): void {
+	): Peer {
 		logger.debug(
 			'handleConnection() [peerId: %s, displayName: %s, roomId: %s]',
 			peerId,
@@ -103,8 +103,6 @@ export default class ServerManager {
 
 		room.addPeer(peer);
 
-		// At this point we have a valid Peer that is waiting in the Join dialog.
-		// Register middleware to handle the Peer actually joining the room. For
-		// now, prime the room to be created if it does not exist.
+		return peer;
 	}
 }
