@@ -59,10 +59,14 @@ export const createSocketHandler = (config: Config) => async (socket: Socket) =>
 	}
 
 	const authToken = socket.handshake.query['authToken'] as string | undefined;
+	const apiKey = socket.handshake.query['apiKey'] as string | undefined;
 	const loginRequired = config.firebase?.loginRequired ?? false;
 	let authenticatedRoles: number[] | undefined;
 
-	if (authToken) {
+	if (config.mobileApiKey && apiKey === config.mobileApiKey) {
+		logger.debug('socket authenticated via apiKey [peerId: %s]', peerId);
+		authenticatedRoles = [ userRoles.AUTHENTICATED.id ];
+	} else if (authToken) {
 		const decoded = await authManager.verify(authToken);
 
 		if (decoded) {

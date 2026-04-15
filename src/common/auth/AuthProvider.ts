@@ -6,5 +6,6 @@ export interface DecodedUser {
 }
 
 export interface AuthProvider {
-	verify(token: string): Promise<DecodedUser | null>;
+	// eslint-disable-next-line no-unused-vars
+	verify(idToken: string): Promise<DecodedUser | null>;
 }

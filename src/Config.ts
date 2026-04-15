@@ -18,4 +18,5 @@ export interface Config {
 		serviceAccountPath: string;
 		loginRequired: boolean;
 	};
+	mobileApiKey?: string;
 }

@@ -12,7 +12,7 @@ export const createAuthRouter = (config: Config): express.Router => {
 
 	const corsOptions: cors.CorsOptions = {
 		origin: config.baseFEOrigin || '*',
-		methods: ['POST'],
+		methods: [ 'POST' ],
 	};
 
 	router.use(express.json());

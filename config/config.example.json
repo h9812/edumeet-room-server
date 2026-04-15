@@ -16,5 +16,6 @@
 	"firebase": {
 		"serviceAccountPath": "./config/firebase-service-account.json",
 		"loginRequired": true
-	}
+	},
+	"mobileApiKey": "CHANGE_ME_TO_A_RANDOM_SECRET"
 }

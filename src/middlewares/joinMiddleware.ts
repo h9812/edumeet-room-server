@@ -74,12 +74,12 @@ export const createJoinMiddleware = ({ room }: { room: Room; }): Middleware<Peer
 					logger.debug('     (none — first peer in room)');
 				} else {
 					for (const p of peersAlreadyInRoom) {
-						const { id, displayName, audioOnly, roles } = p.peerInfo;
+						const { id, displayName: peerDisplayName, audioOnly, roles } = p.peerInfo;
 
 						logger.debug(
 							'     • id=%s displayName=%s audioOnly=%s roles=%o',
 							id,
-							displayName ?? '(none)',
+							peerDisplayName ?? '(none)',
 							audioOnly,
 							roles
 						);
